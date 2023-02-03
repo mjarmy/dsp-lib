@@ -4,16 +4,15 @@
 
 //--------------------------------------------------------------
 //
-// SvfInputMixing is a State Variable Filter that applies a configureable mix of
-// lowpass, bandpass and highpass filtering.  It emulates analog electronic
-// circuits found in classic synthesizers.
-//
-// https://en.wikipedia.org/wiki/State_variable_filter
-//
+// SvfInputMixing is a State Variable Filter that provides a configurable mix of
+// lowpass, bandpass and highpass filtering. It can also be used as a peaking
+// filter or notch filter.
+// 
 // SvfInputMixing is a C++ port of the algorithm described in the paper "Input
 // mixing linear trapezoidal State Variable Filter (SVF) in state increment
 // form", by Andy Simper of Cytomic.
 //
+// https://en.wikipedia.org/wiki/State_variable_filter
 // https://cytomic.com/files/dsp/SvfInputMixing.pdf
 //
 //--------------------------------------------------------------
