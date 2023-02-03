@@ -7,7 +7,7 @@
 // SvfInputMixing is a State Variable Filter that provides a configurable mix of
 // lowpass, bandpass and highpass filtering. It can also be used as a peaking
 // filter or notch filter.
-// 
+//
 // SvfInputMixing is a C++ port of the algorithm described in the paper "Input
 // mixing linear trapezoidal State Variable Filter (SVF) in state increment
 // form", by Andy Simper of Cytomic.
@@ -100,19 +100,7 @@ class SvfInputMixing {
         ic1eq = ic1eq + 2.0 * t1;
         ic2eq = ic2eq + 2.0 * t2;
 
-        double output = vhigh + vc2;
-
-        // It's possible for the filter to start producing NaN output if you
-        // call init() with wildy varying extreme values for cutoff and
-        // resonance, in between successive calls to tick().  This check is a
-        // failsafe mechanism to reset the filter if that happens.  You can
-        // comment it out if you don't need it.
-        if (std::isnan(output)) {
-            clear();
-            return 0;
-        } else {
-            return output;
-        }
+        return vhigh + vc2;
     }
 
   private:
