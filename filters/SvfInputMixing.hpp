@@ -24,12 +24,13 @@ class SvfInputMixing {
     SvfInputMixing() {}
     ~SvfInputMixing() {}
 
-    // Call init() any time you'd like to change the cutoff frequency,
-    // resonance, or sample rate.  If you are changing the sample rate, you
-    // should call clear() before calling init().
+    // init() changes the cutoff frequency, resonance, and/or sample rate.  
     //
-    // cutoff: cutoff frequency -- In Hz, range is [16.0, sampleRate/2.0].
-    // res: resonance, aka Q -- Range is [0.0, 0.999].
+    // If you are changing the sample rate, you should call clear() before
+    // calling init().
+    //
+    // cutoff: cutoff frequency -- In Hz. The range is [16.0, sampleRate/2.0].
+    // res: resonance, aka Q -- The range is [0.0, 0.999].
     // sampleRate -- samples per second, e.g. 44100.
     //
     void init(double cutoff, double res, double sampleRate) {
@@ -54,11 +55,10 @@ class SvfInputMixing {
         g5 = -s1n - k * s2n;
     }
 
-    // Call setMix() any time you'd like to change the output mixture of
-    // lowpass, bandpass and highpass filtering.
+    // setMix() changes the output mixture of lowpass, bandpass and highpass
+    // filtering.
     //
-    // In "normal" operation, the sum of the three parameters should
-    // be 1.0, e.g.:
+    // For many use cases, the sum of the three parameters should be 1.0, e.g.:
     //
     //      lowpass only: [1, 0, 0]
     //      bandpass only: [0, 1, 0]
@@ -67,7 +67,7 @@ class SvfInputMixing {
     //      mostly lowpass plus a little bandpass: [0.9, 0.1, 0]
     //      etc, etc.
     //
-    // Per Andy Simper's paper, you can also create a notch or peaking filter:
+    // You can also create a notch or peaking filter:
     //
     //      notch: [1, 0, 1]
     //      peaking: [-1, 0, 1]
@@ -78,14 +78,13 @@ class SvfInputMixing {
         highMix = highMix_;
     }
 
-    // Call clear() before changing the sample rate, or any time you need to
-    // reset the filter.
+    // clear() resets the filter. 
     void clear() {
         ic1eq = 0.0;
         ic2eq = 0.0;
     }
 
-    // Call tick() per-sample to filter the input.
+    // tick() filters the input based on the current settings.
     double tick(double input) {
 
         double vlow = lowMix * input;
