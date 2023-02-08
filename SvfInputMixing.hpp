@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-//--------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 // SvfInputMixing is a State Variable Filter that provides a configurable mix of
 // lowpass, bandpass and highpass filtering. It can also be used as a peaking
@@ -15,16 +15,17 @@
 // https://en.wikipedia.org/wiki/State_variable_filter
 // https://cytomic.com/files/dsp/SvfInputMixing.pdf
 //
-//--------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 class SvfInputMixing {
 
   public:
 
     SvfInputMixing() {}
+
     ~SvfInputMixing() {}
 
-    // init() changes the cutoff frequency, resonance, and/or sample rate.  
+    // init() changes the cutoff frequency, resonance, and/or sample rate.
     //
     // If you are changing the sample rate, you should call clear() before
     // calling init().
@@ -78,7 +79,7 @@ class SvfInputMixing {
         highMix = highMix_;
     }
 
-    // clear() resets the filter. 
+    // clear() resets the filter.
     void clear() {
         ic1eq = 0.0;
         ic2eq = 0.0;
