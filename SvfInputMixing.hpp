@@ -25,7 +25,7 @@ class SvfInputMixing {
 
     ~SvfInputMixing() {}
 
-    // init() changes the cutoff frequency, resonance, and/or sample rate.
+    // Change the cutoff frequency, resonance, and/or sample rate.
     //
     // If you are changing the sample rate, you should call clear() before
     // calling init().
@@ -56,7 +56,7 @@ class SvfInputMixing {
         g5 = -s1n - k * s2n;
     }
 
-    // setMix() changes the output mixture of lowpass, bandpass and highpass
+    // Change the output mixture of lowpass, bandpass and highpass
     // filtering.
     //
     // For many use cases, the sum of the three parameters should be 1.0, e.g.:
@@ -79,13 +79,13 @@ class SvfInputMixing {
         highMix = highMix_;
     }
 
-    // clear() resets the filter.
+    // Reset the filter.
     void clear() {
         ic1eq = 0.0;
         ic2eq = 0.0;
     }
 
-    // tick() filters the input based on the current settings.
+    // Filter one sample based on the current settings.
     double tick(double input) {
 
         double vlow = lowMix * input;

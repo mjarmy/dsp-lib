@@ -2,8 +2,6 @@
 
 `dsp-lib` is a collection of utilities related to audio DSP
 
-## Filters
-
 ### SvfInputMixing
 
 `SvfInputMixing` is a [State Variable Filter](https://en.wikipedia.org/wiki/State_variable_filter) 
