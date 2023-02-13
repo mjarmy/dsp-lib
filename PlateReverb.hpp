@@ -42,12 +42,12 @@ SOFTWARE.
 //
 // Parameters:
 //
-//    mix:
-//    predelay:
-//    lowpass:
-//    decay:
-//    size:
-//    damping:
+//    mix:        Dry/wet mix.
+//    predelay:   Delay before reverb.
+//    lowpass:    Apply a lowpass filter before reverb.
+//    decay:      How quickly the reverb decays.
+//    size:       The size of our imaginary plate.
+//    damping:    How quickly high frequencies decay during reverb.
 //
 //-----------------------------------------------------------------------------
 
