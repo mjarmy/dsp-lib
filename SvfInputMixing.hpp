@@ -51,9 +51,6 @@ class SvfInputMixing {
 
     // Change the cutoff frequency, resonance, and/or sample rate.
     //
-    // If you are changing the sample rate, you should call clear() before
-    // calling init().
-    //
     // cutoff: cutoff frequency -- In Hz. The range is [16.0, sampleRate/2.0].
     // res: resonance, aka Q -- The range is [0.0, 0.999].
     // sampleRate -- samples per second, e.g. 44100.
