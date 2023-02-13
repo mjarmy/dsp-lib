@@ -4,7 +4,7 @@
 
 ### PlateReverb
 
-PlateReverb is an implementation of the classic plate reverb algorithm
+`PlateReverb` is an implementation of the classic plate reverb algorithm
 described by Jon Dattorro.
 
 Dattorro, J. 1997. ["Effect Design Part 1: Reverberators and Other Filters."](https://ccrma.stanford.edu/~dattorro/EffectDesignPart1.pdf)
@@ -19,3 +19,7 @@ can also be used as a peaking filter or notch filter.
 `SvfInputMixing` is a C++ port of the algorithm described in the [paper](https://cytomic.com/files/dsp/SvfInputMixing.pdf) 
 "Input mixing linear trapezoidal State Variable Filter (SVF) in state increment
 form", by Andy Simper of Cytomic.
+
+### FastMath
+
+`FastMath` contains some fast approximations for trigonometric functions.

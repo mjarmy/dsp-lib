@@ -28,7 +28,9 @@ SOFTWARE.
 #include <cmath>
 #include <memory>
 
-//-----------------------------------------------------------------------------
+#include "FastMath.hpp"
+
+//------------------------------------------------------------------------------
 // PlateReverb is an implementation of the classic plate reverb algorithm
 // described by Jon Dattorro.
 //
@@ -44,9 +46,9 @@ SOFTWARE.
 //    lowpass:    Apply a lowpass filter before reverb.
 //    decay:      How quickly the reverb decays.
 //    size:       The size of our imaginary plate.
-//    damping:    How quickly high frequencies decay during reverb.
+//    damping:    How much high frequencies are filtered during reverb.
 //
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 class PlateReverb {
 
@@ -122,23 +124,29 @@ class PlateReverb {
         };
     }
 
+    // Dry/wet mix.
     void setMix(double m /* [0, 1] */) { mix = clamp(m, 0.0, 1.0); }
 
+    // Delay before reverb.
     void setPredelay(double pd /* in seconds, [0, 0.1] */) {
         predelay = clamp(pd, 0.0, kMaxPredelay) * sampleRate;
     }
 
+    // Apply a lowpass filter before reverb.
     void setLowpass(double cutoff /* Hz */) {
         cutoff = clamp(cutoff, 16.0, 20000.0);
         lowpass.setCutoff(cutoff);
     }
 
+    // How quickly the reverb decays.
     void setDecay(double dr /* [0, 1) */) {
         decayRate = clamp(dr, 0.0, 0.9999999);
         leftTank.setDecay(decayRate);
         rightTank.setDecay(decayRate);
     }
 
+    // The size of our imaginary plate.
+    //
     // The size parameter scales the delay time for all of the delay lines and
     // APFs in each tank, and for all of the tap points.
     //
@@ -159,6 +167,7 @@ class PlateReverb {
         }
     }
 
+    // How much high frequencies are filtered during reverb.
     void setDamping(double cutoff /* Hz */) {
         cutoff = clamp(cutoff, 16.0, 20000.0);
 
@@ -166,6 +175,7 @@ class PlateReverb {
         rightTank.damping.setCutoff(cutoff);
     }
 
+    // Process a stereo pair of samples.
     void process(
         double dryLeft, double dryRight, double* leftOut, double* rightOut) {
 
@@ -296,7 +306,7 @@ class PlateReverb {
             return a + (b - a) * frac;
         }
 
-        // This does "read-before-write".
+        // This does read-before-write.
         inline double tapAndPush(double delay, double val) {
             double out = tap(delay);
             push(val);
@@ -374,7 +384,7 @@ class PlateReverb {
         }
 
         inline double process() {
-            double out = -fastSin(phase);
+            double out = -FastMath::fastSin(phase);
 
             phase += phaseInc;
             if (phase > M_PI) {
@@ -395,23 +405,6 @@ class PlateReverb {
         void recalc() {
             phaseInc = freq * invSampleRate;
             phaseInc *= 2 * M_PI;
-        }
-
-        // Parabolic sine approximation.
-        // Range is [-pi, pi].
-        //
-        // https://web.archive.org/web/20100613230051/http://www.devmaster.net/forums/showthread.php?t=5784
-        inline double fastSin(double x) {
-            static constexpr double B = 4 / M_PI;
-            static constexpr double C = -4 / (M_PI * M_PI);
-            static constexpr double P = 0.225;
-
-            double y = B * x + C * x * std::abs(x);
-
-            // Extra precision.
-            y = P * (y * std::abs(y) - y) + y;
-
-            return y;
         }
     };
 
