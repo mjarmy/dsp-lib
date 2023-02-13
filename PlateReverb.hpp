@@ -29,15 +29,12 @@ SOFTWARE.
 #include <memory>
 
 //-----------------------------------------------------------------------------
-// PlateReverb is an algorithmic reverb that simulates a plate reverb.
-//
 // PlateReverb is an implementation of the classic plate reverb algorithm
 // described by Jon Dattorro.
 //
 // Dattorro, J. 1997. "Effect Design Part 1: Reverberators and Other Filters."
 // Journal of the Audio Engineering Society, Vol. 45, No. 9
 //
-// https://en.wikipedia.org/wiki/Reverb_effect#Plate_reverb
 // https://ccrma.stanford.edu/~dattorro/EffectDesignPart1.pdf
 //
 // Parameters:

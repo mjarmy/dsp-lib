@@ -4,9 +4,6 @@
 
 ### PlateReverb
 
-PlateReverb is an algorithmic reverb that simulates 
-a [plate reverb](https://en.wikipedia.org/wiki/Reverb_effect#Plate_reverb).
-
 PlateReverb is an implementation of the classic plate reverb algorithm
 described by Jon Dattorro.
 
