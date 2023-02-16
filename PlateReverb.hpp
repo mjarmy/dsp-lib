@@ -179,6 +179,8 @@ class PlateReverb {
     void process(
         double dryLeft, double dryRight, double* leftOut, double* rightOut) {
 
+        // Note that this is "synthetic stereo".  We produce a stereo pair
+        // of output samples based on the summed input.
         double sum = dryLeft + dryRight;
 
         // Predelay
@@ -512,7 +514,8 @@ class PlateReverb {
 
     std::unique_ptr<DelayLine> predelayLine = nullptr;
     OnePoleFilter lowpass;
-    std::array<std::unique_ptr<DelayAllpass>, 4> diffusers;
+    std::array<std::unique_ptr<DelayAllpass>, 4> diffusers = {
+        nullptr, nullptr, nullptr, nullptr};
 
     Tank leftTank;
     Tank rightTank;
