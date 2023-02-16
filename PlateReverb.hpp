@@ -181,25 +181,25 @@ class PlateReverb {
 
         double sum = dryLeft + dryRight;
 
-        // predelay
+        // Predelay
         sum = predelayLine->tapAndPush(predelay, sum);
 
-        // input lowpass
+        // Input lowpass
         sum = lowpass.process(sum);
 
-        // diffusers
+        // Diffusers
         sum = diffusers[0]->process(sum, diffusers[0]->getSize());
         sum = diffusers[1]->process(sum, diffusers[1]->getSize());
         sum = diffusers[2]->process(sum, diffusers[2]->getSize());
         sum = diffusers[3]->process(sum, diffusers[3]->getSize());
 
-        // tanks
+        // Tanks
         double leftIn = sum + rightTank.out * decayRate;
         double rightIn = sum + leftTank.out * decayRate;
         leftTank.process(leftIn);
         rightTank.process(rightIn);
 
-        // tap for output
+        // Tap for output
         double wetLeft = rightTank.del1->tap(leftTaps[0])   //  266
                          + rightTank.del1->tap(leftTaps[1]) // 2974
                          - rightTank.apf2->tap(leftTaps[2]) // 1913
@@ -216,7 +216,7 @@ class PlateReverb {
                           - rightTank.apf2->tap(rightTaps[5])  //  335
                           - rightTank.del2->tap(rightTaps[6]); //  121
 
-        // mix
+        // Mix
         *leftOut = dryLeft * (1 - mix) + wetLeft * mix;
         *rightOut = dryRight * (1 - mix) + wetRight * mix;
     }
@@ -235,7 +235,7 @@ class PlateReverb {
         ~OnePoleFilter() {}
 
         void setSampleRate(double sampleRate_) {
-            invSampleRate = 1 / sampleRate_;
+            sampleRate = sampleRate_;
             recalc();
         }
 
@@ -251,7 +251,7 @@ class PlateReverb {
 
       private:
 
-        double invSampleRate = 1;
+        double sampleRate = 1;
         double cutoff = 0;
 
         double a = 0;
@@ -259,7 +259,7 @@ class PlateReverb {
         double z = 0;
 
         void recalc() {
-            b = std::exp(-2 * M_PI * cutoff * invSampleRate);
+            b = std::exp(-2 * M_PI * cutoff / sampleRate);
             a = 1 - b;
         }
     };
@@ -374,7 +374,7 @@ class PlateReverb {
         ~Lfo() {}
 
         void setSampleRate(double sampleRate_) {
-            invSampleRate = 1 / sampleRate_;
+            sampleRate = sampleRate_;
             recalc();
         }
 
@@ -396,14 +396,14 @@ class PlateReverb {
 
       private:
 
-        double invSampleRate = 1;
+        double sampleRate = 1;
         double freq = 0;
 
         double phaseInc = 0;
         double phase = -M_PI;
 
         void recalc() {
-            phaseInc = freq * invSampleRate;
+            phaseInc = freq / sampleRate;
             phaseInc *= 2 * M_PI;
         }
     };
