@@ -60,6 +60,8 @@ class PlateReverb {
     PlateReverb() {}
     ~PlateReverb() {}
 
+    // Set the sample rate.  Note that we are re-mallocing all of the various
+    // delay lines here.
     void setSampleRate(double sampleRate_) {
         sampleRate = sampleRate_;
 
@@ -226,7 +228,7 @@ class PlateReverb {
   private:
 
     //--------------------------------------------------------------
-    // OnePoleFilter is a one-pole low pass filter.
+    // OnePoleFilter
     //--------------------------------------------------------------
 
     class OnePoleFilter {
@@ -479,7 +481,7 @@ class PlateReverb {
 
       private:
 
-        uint64_t apf1Size;
+        uint64_t apf1Size = 0;
         double maxModDepth = 0;
         double modDepth = 0;
 
