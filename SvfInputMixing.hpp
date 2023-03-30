@@ -41,7 +41,7 @@ SOFTWARE.
 //
 //------------------------------------------------------------------------------
 
-class SvfInputMixing {
+template <class F> class SvfInputMixing {
 
   public:
 
@@ -55,15 +55,15 @@ class SvfInputMixing {
     // res: resonance, aka Q -- The range is [0.0, 0.999].
     // sampleRate -- samples per second, e.g. 44100.
     //
-    void init(double cutoff, double res, double sampleRate) {
+    void init(F cutoff, F res, F sampleRate) {
 
-        double k = 2 - 2 * res;
-        double w = M_PI * cutoff / sampleRate;
-        double s1 = std::sin(w);
-        double s2 = std::sin(2 * w);
-        double nrm = 1 / (2 + (2 - k) * s2);
-        double s1n = 2 * s1 * s1 * nrm;
-        double s2n = s2 * nrm;
+        F k = 2 - 2 * res;
+        F w = M_PI * cutoff / sampleRate;
+        F s1 = std::sin(w);
+        F s2 = std::sin(2 * w);
+        F nrm = 1 / (2 + (2 - k) * s2);
+        F s1n = 2 * s1 * s1 * nrm;
+        F s2n = s2 * nrm;
 
         g0m0 = k * s1n + s2n;
         g0m1 = -s1n;
@@ -94,7 +94,7 @@ class SvfInputMixing {
     //      notch: [1, 0, 1]
     //      peaking: [-1, 0, 1]
     //
-    void setMix(double lowMix_, double bandMix_, double highMix_) {
+    void setMix(F lowMix_, F bandMix_, F highMix_) {
         lowMix = lowMix_;
         bandMix = bandMix_;
         highMix = highMix_;
@@ -107,17 +107,17 @@ class SvfInputMixing {
     }
 
     // Filter one sample based on the current settings.
-    double tick(double input) {
+    F tick(F input) {
 
-        double vlow = lowMix * input;
-        double vband = bandMix * input;
-        double vhigh = highMix * input;
+        F vlow = lowMix * input;
+        F vband = bandMix * input;
+        F vhigh = highMix * input;
 
-        double t1 =
+        F t1 =
             vlow * g0m0 + vband * g0m1 + vhigh * g0m2 + g1 * ic1eq + g2 * ic2eq;
-        double t2 =
+        F t2 =
             vlow * g3m0 + vband * g3m1 + vhigh * g3m2 + g4 * ic1eq + g5 * ic2eq;
-        double vc2 = t2 + ic2eq;
+        F vc2 = t2 + ic2eq;
         ic1eq = ic1eq + 2.0 * t1;
         ic2eq = ic2eq + 2.0 * t2;
 
@@ -126,21 +126,21 @@ class SvfInputMixing {
 
   private:
 
-    double g0m0 = 0.0;
-    double g0m1 = 0.0;
-    double g0m2 = 0.0;
-    double g1 = 0.0;
-    double g2 = 0.0;
-    double g3m0 = 0.0;
-    double g3m1 = 0.0;
-    double g3m2 = 0.0;
-    double g4 = 0.0;
-    double g5 = 0.0;
+    F g0m0 = 0.0;
+    F g0m1 = 0.0;
+    F g0m2 = 0.0;
+    F g1 = 0.0;
+    F g2 = 0.0;
+    F g3m0 = 0.0;
+    F g3m1 = 0.0;
+    F g3m2 = 0.0;
+    F g4 = 0.0;
+    F g5 = 0.0;
 
-    double lowMix = 0.0;
-    double bandMix = 0.0;
-    double highMix = 0.0;
+    F lowMix = 0.0;
+    F bandMix = 0.0;
+    F highMix = 0.0;
 
-    double ic1eq = 0.0;
-    double ic2eq = 0.0;
+    F ic1eq = 0.0;
+    F ic2eq = 0.0;
 };

@@ -30,7 +30,7 @@ SOFTWARE.
 // FastMath contains some fast approximations for trigonometric functions.
 //------------------------------------------------------------------------------
 
-class FastMath {
+template <class F> class FastMath {
 
   public:
 
@@ -38,12 +38,12 @@ class FastMath {
     //
     // https://web.archive.org/web/20100613230051/http://www.devmaster.net/forums/showthread.php?t=5784
     // https://www.desmos.com/calculator/f0eryaepsl
-    static inline double fastSin(double x) {
-        static constexpr double B = 4 / M_PI;
-        static constexpr double C = -4 / (M_PI * M_PI);
-        static constexpr double P = 0.225;
+    static inline F fastSin(F x) {
+        static constexpr F B = 4 / M_PI;
+        static constexpr F C = -4 / (M_PI * M_PI);
+        static constexpr F P = 0.225;
 
-        double y = B * x + C * x * std::abs(x);
+        F y = B * x + C * x * std::abs(x);
 
         // Extra precision.
         y = P * (y * std::abs(y) - y) + y;
@@ -55,10 +55,10 @@ class FastMath {
     //
     // https://www.kvraudio.com/forum/viewtopic.php?p=5447225#p5447225
     // https://www.desmos.com/calculator/bjc7zsl4ek
-    static inline double fastTanh(const double x) {
-        const double ax = std::abs(x);
-        const double x2 = x * x;
-        const double z =
+    static inline F fastTanh(const F x) {
+        const F ax = std::abs(x);
+        const F x2 = x * x;
+        const F z =
             x * (0.773062670268356 + ax +
                  (0.757118539838817 + 0.0139332362248817 * x2 * x2) * x2 * ax);
 

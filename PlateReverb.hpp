@@ -50,24 +50,24 @@ SOFTWARE.
 //
 //------------------------------------------------------------------------------
 
-class PlateReverb {
+template <class F, class I> class PlateReverb {
 
   public:
 
-    static constexpr double kMaxPredelay = 0.1; // seconds
-    static constexpr double kMaxSize = 2.0;
+    static constexpr F kMaxPredelay = 0.1; // seconds
+    static constexpr F kMaxSize = 2.0;
 
     PlateReverb() {}
     ~PlateReverb() {}
 
     // Set the sample rate.  Note that we are re-mallocing all of the various
     // delay lines here.
-    void setSampleRate(double sampleRate_) {
+    void setSampleRate(F sampleRate_) {
         sampleRate = sampleRate_;
 
         // Ratio of our sample rate to the sample rate that is used in
         // Dattorro's paper.
-        double r = sampleRate / 29761.0;
+        F r = sampleRate / 29761.0;
 
         // Predelay
         predelayLine.reset(new DelayLine(std::ceil(sampleRate * kMaxPredelay)));
@@ -84,7 +84,7 @@ class PlateReverb {
         diffusers[3].reset(new DelayAllpass(std::ceil(277 * r), 0.625));
 
         // Tanks
-        double maxModDepth = 8.0 * kMaxSize * r;
+        F maxModDepth = 8.0 * kMaxSize * r;
         leftTank.resetDelayLines(
             std::ceil(kMaxSize * 672 * r), -0.7, // apf1
             maxModDepth,
@@ -127,21 +127,21 @@ class PlateReverb {
     }
 
     // Dry/wet mix.
-    void setMix(double m /* [0, 1] */) { mix = clamp(m, 0.0, 1.0); }
+    void setMix(F m /* [0, 1] */) { mix = clamp(m, 0.0, 1.0); }
 
     // Delay before reverb.
-    void setPredelay(double pd /* in seconds, [0, 0.1] */) {
+    void setPredelay(F pd /* in seconds, [0, 0.1] */) {
         predelay = clamp(pd, 0.0, kMaxPredelay) * sampleRate;
     }
 
     // Apply a lowpass filter before reverb.
-    void setLowpass(double cutoff /* Hz */) {
+    void setLowpass(F cutoff /* Hz */) {
         cutoff = clamp(cutoff, 16.0, 20000.0);
         lowpass.setCutoff(cutoff);
     }
 
     // How quickly the reverb decays.
-    void setDecay(double dr /* [0, 1) */) {
+    void setDecay(F dr /* [0, 1) */) {
         decayRate = clamp(dr, 0.0, 0.9999999);
         leftTank.setDecay(decayRate);
         rightTank.setDecay(decayRate);
@@ -154,23 +154,23 @@ class PlateReverb {
     //
     // Note that there is no size parameter in Dattorro's paper; it is an
     // extension to the original algorithm.
-    void setSize(double sz /* [0, 2] */) {
+    void setSize(F sz /* [0, 2] */) {
 
-        double sizeRatio = clamp(sz, 0.0, kMaxSize) / kMaxSize;
+        F sizeRatio = clamp(sz, 0.0, kMaxSize) / kMaxSize;
 
         // Scale the tank delays and APFs in each tank
         leftTank.setSizeRatio(sizeRatio);
         rightTank.setSizeRatio(sizeRatio);
 
         // Scale the taps
-        for (int i = 0; i < kNumTaps; i++) {
+        for (I i = 0; i < kNumTaps; i++) {
             leftTaps[i] = baseLeftTaps[i] * sizeRatio;
             rightTaps[i] = baseRightTaps[i] * sizeRatio;
         }
     }
 
     // How much high frequencies are filtered during reverb.
-    void setDamping(double cutoff /* Hz */) {
+    void setDamping(F cutoff /* Hz */) {
         cutoff = clamp(cutoff, 16.0, 20000.0);
 
         leftTank.damping.setCutoff(cutoff);
@@ -178,12 +178,11 @@ class PlateReverb {
     }
 
     // Process a stereo pair of samples.
-    void process(
-        double dryLeft, double dryRight, double* leftOut, double* rightOut) {
+    void process(F dryLeft, F dryRight, F* leftOut, F* rightOut) {
 
         // Note that this is "synthetic stereo".  We produce a stereo pair
         // of output samples based on the summed input.
-        double sum = dryLeft + dryRight;
+        F sum = dryLeft + dryRight;
 
         // Predelay
         sum = predelayLine->tapAndPush(predelay, sum);
@@ -198,27 +197,27 @@ class PlateReverb {
         sum = diffusers[3]->process(sum, diffusers[3]->getSize());
 
         // Tanks
-        double leftIn = sum + rightTank.out * decayRate;
-        double rightIn = sum + leftTank.out * decayRate;
+        F leftIn = sum + rightTank.out * decayRate;
+        F rightIn = sum + leftTank.out * decayRate;
         leftTank.process(leftIn);
         rightTank.process(rightIn);
 
         // Tap for output
-        double wetLeft = rightTank.del1->tap(leftTaps[0])   //  266
-                         + rightTank.del1->tap(leftTaps[1]) // 2974
-                         - rightTank.apf2->tap(leftTaps[2]) // 1913
-                         + rightTank.del2->tap(leftTaps[3]) // 1996
-                         - leftTank.del1->tap(leftTaps[4])  // 1990
-                         - leftTank.apf2->tap(leftTaps[5])  //  187
-                         - leftTank.del2->tap(leftTaps[6]); // 1066
+        F wetLeft = rightTank.del1->tap(leftTaps[0])   //  266
+                    + rightTank.del1->tap(leftTaps[1]) // 2974
+                    - rightTank.apf2->tap(leftTaps[2]) // 1913
+                    + rightTank.del2->tap(leftTaps[3]) // 1996
+                    - leftTank.del1->tap(leftTaps[4])  // 1990
+                    - leftTank.apf2->tap(leftTaps[5])  //  187
+                    - leftTank.del2->tap(leftTaps[6]); // 1066
 
-        double wetRight = leftTank.del1->tap(rightTaps[0])     //  353
-                          + leftTank.del1->tap(rightTaps[1])   // 3627
-                          - leftTank.apf2->tap(rightTaps[2])   // 1228
-                          + leftTank.del2->tap(rightTaps[3])   // 2673
-                          - rightTank.del1->tap(rightTaps[4])  // 2111
-                          - rightTank.apf2->tap(rightTaps[5])  //  335
-                          - rightTank.del2->tap(rightTaps[6]); //  121
+        F wetRight = leftTank.del1->tap(rightTaps[0])     //  353
+                     + leftTank.del1->tap(rightTaps[1])   // 3627
+                     - leftTank.apf2->tap(rightTaps[2])   // 1228
+                     + leftTank.del2->tap(rightTaps[3])   // 2673
+                     - rightTank.del1->tap(rightTaps[4])  // 2111
+                     - rightTank.apf2->tap(rightTaps[5])  //  335
+                     - rightTank.del2->tap(rightTaps[6]); //  121
 
         // Mix
         *leftOut = dryLeft * (1 - mix) + wetLeft * mix;
@@ -238,29 +237,29 @@ class PlateReverb {
         OnePoleFilter() {}
         ~OnePoleFilter() {}
 
-        void setSampleRate(double sampleRate_) {
+        void setSampleRate(F sampleRate_) {
             sampleRate = sampleRate_;
             recalc();
         }
 
-        void setCutoff(double cutoff_ /* Hz */) {
+        void setCutoff(F cutoff_ /* Hz */) {
             cutoff = cutoff_;
             recalc();
         }
 
-        double process(double x) {
+        F process(F x) {
             z = x * a + z * b;
             return z;
         }
 
       private:
 
-        double sampleRate = 1;
-        double cutoff = 0;
+        F sampleRate = 1;
+        F cutoff = 0;
 
-        double a = 0;
-        double b = 0;
-        double z = 0;
+        F a = 0;
+        F b = 0;
+        F z = 0;
 
         void recalc() {
             b = std::exp(-2 * M_PI * cutoff / sampleRate);
@@ -276,12 +275,12 @@ class PlateReverb {
 
       public:
 
-        DelayLine(uint64_t size_) : size(size_) {
+        DelayLine(I size_) : size(size_) {
 
             // For speed, create a bigger buffer than we really need.
-            uint64_t bufferSize = ceilPowerOfTwo(size);
-            buffer.reset(new double[bufferSize]);
-            std::memset(&buffer[0], 0, bufferSize * sizeof(double));
+            I bufferSize = ceilPowerOfTwo(size);
+            buffer.reset(new F[bufferSize]);
+            std::memset(&buffer[0], 0, bufferSize * sizeof(F));
 
             mask = bufferSize - 1;
 
@@ -290,46 +289,46 @@ class PlateReverb {
 
         ~DelayLine() {}
 
-        inline void push(double val) {
+        inline void push(F val) {
             buffer[writeIdx++] = val;
             writeIdx &= mask;
         }
 
-        inline double tap(double delay /* samples */) {
+        inline F tap(F delay /* samples */) {
             // We always want to be able to properly handle any delay value that
             // gets passed in here, without going past the original size.
             assert(delay <= size);
 
-            int64_t d = delay;
-            double frac = 1 - (delay - d);
+            I d = delay;
+            F frac = 1 - (delay - d);
 
-            int64_t readIdx = (writeIdx - 1) - d;
-            double a = buffer[(readIdx - 1) & mask];
-            double b = buffer[readIdx & mask];
+            I readIdx = (writeIdx - 1) - d;
+            F a = buffer[(readIdx - 1) & mask];
+            F b = buffer[readIdx & mask];
 
             return a + (b - a) * frac;
         }
 
         // This does read-before-write.
-        inline double tapAndPush(double delay, double val) {
-            double out = tap(delay);
+        inline F tapAndPush(F delay, F val) {
+            F out = tap(delay);
             push(val);
             return out;
         }
 
-        inline uint64_t getSize() { return size; }
+        inline I getSize() { return size; }
 
       private:
 
-        const uint64_t size;
+        const I size;
 
-        std::unique_ptr<double[]> buffer;
-        uint64_t mask;
+        std::unique_ptr<F[]> buffer;
+        I mask;
 
-        uint64_t writeIdx;
+        I writeIdx;
 
-        static uint64_t ceilPowerOfTwo(uint64_t n) {
-            return (uint64_t)std::pow(2, std::ceil(std::log(n) / std::log(2)));
+        static I ceilPowerOfTwo(I n) {
+            return (I)std::pow(2, std::ceil(std::log(n) / std::log(2)));
         }
     };
 
@@ -341,29 +340,28 @@ class PlateReverb {
 
       public:
 
-        DelayAllpass(uint64_t size_, double gain_)
-            : delayLine(size_), gain(gain_) {}
+        DelayAllpass(I size_, F gain_) : delayLine(size_), gain(gain_) {}
 
         ~DelayAllpass() {}
 
-        inline double process(double x, double delay) {
-            double wd = delayLine.tap(delay);
-            double w = x + gain * wd;
-            double y = -gain * w + wd;
+        inline F process(F x, F delay) {
+            F wd = delayLine.tap(delay);
+            F w = x + gain * wd;
+            F y = -gain * w + wd;
             delayLine.push(w);
             return y;
         }
 
-        inline void setGain(double gain_) { gain = gain_; }
+        inline void setGain(F gain_) { gain = gain_; }
 
-        inline double tap(double delay) { return delayLine.tap(delay); }
+        inline F tap(F delay) { return delayLine.tap(delay); }
 
-        inline uint64_t getSize() { return delayLine.getSize(); }
+        inline I getSize() { return delayLine.getSize(); }
 
       private:
 
         DelayLine delayLine;
-        double gain;
+        F gain;
     };
 
     //--------------------------------------------------------------
@@ -377,18 +375,18 @@ class PlateReverb {
         Lfo() {}
         ~Lfo() {}
 
-        void setSampleRate(double sampleRate_) {
+        void setSampleRate(F sampleRate_) {
             sampleRate = sampleRate_;
             recalc();
         }
 
-        void setFrequency(double freq_) {
+        void setFrequency(F freq_) {
             freq = freq_;
             recalc();
         }
 
-        inline double process() {
-            double out = -FastMath::fastSin(phase);
+        inline F process() {
+            F out = -FastMath<F>::fastSin(phase);
 
             phase += phaseInc;
             if (phase > M_PI) {
@@ -400,11 +398,11 @@ class PlateReverb {
 
       private:
 
-        double sampleRate = 1;
-        double freq = 0;
+        F sampleRate = 1;
+        F freq = 0;
 
-        double phaseInc = 0;
-        double phase = -M_PI;
+        F phaseInc = 0;
+        F phase = -M_PI;
 
         void recalc() {
             phaseInc = freq / sampleRate;
@@ -424,15 +422,15 @@ class PlateReverb {
         ~Tank() {}
 
         void resetDelayLines(
-            uint64_t apf1Size_, double apf1Gain_, // First APF
-            double maxModDepth_,
-            uint64_t delay1Size_,                 // First delay
-            uint64_t apf2Size_, double apf2Gain_, // Second APF
-            uint64_t delay2Size_                  // Second delay
+            I apf1Size_, F apf1Gain_, // First APF
+            F maxModDepth_,
+            I delay1Size_,            // First delay
+            I apf2Size_, F apf2Gain_, // Second APF
+            I delay2Size_             // Second delay
         ) {
             apf1Size = apf1Size_;
             maxModDepth = maxModDepth_;
-            double maxApf1Size = apf1Size + maxModDepth + 1;
+            F maxApf1Size = apf1Size + maxModDepth + 1;
             apf1.reset(new DelayAllpass(maxApf1Size, apf1Gain_));
 
             del1.reset(new DelayLine(delay1Size_));
@@ -444,17 +442,17 @@ class PlateReverb {
             recalcSizeRatio();
         }
 
-        void setDecay(double decayRate_) {
+        void setDecay(F decayRate_) {
             decayRate = decayRate_;
             apf2->setGain(clamp(decayRate + 0.15, 0.25, 0.5));
         }
 
-        void setSizeRatio(double sizeRatio_) {
+        void setSizeRatio(F sizeRatio_) {
             sizeRatio = sizeRatio_;
             recalcSizeRatio();
         }
 
-        void process(double val) {
+        void process(F val) {
 
             // APF1: "Controls density of tail."
             val = apf1->process(val, apf1Delay + lfo.process() * modDepth);
@@ -470,7 +468,7 @@ class PlateReverb {
             out = val;
         }
 
-        double out = 0.0;
+        F out = 0.0;
 
         std::unique_ptr<DelayAllpass> apf1 = nullptr;
         std::unique_ptr<DelayAllpass> apf2 = nullptr;
@@ -481,17 +479,17 @@ class PlateReverb {
 
       private:
 
-        uint64_t apf1Size = 0;
-        double maxModDepth = 0;
-        double modDepth = 0;
+        I apf1Size = 0;
+        F maxModDepth = 0;
+        F modDepth = 0;
 
-        double apf1Delay = 0;
-        double apf2Delay = 0;
-        double del1Delay = 0;
-        double del2Delay = 0;
+        F apf1Delay = 0;
+        F apf2Delay = 0;
+        F del1Delay = 0;
+        F del2Delay = 0;
 
-        double decayRate = 0;
-        double sizeRatio = 0;
+        F decayRate = 0;
+        F sizeRatio = 0;
 
         void recalcSizeRatio() {
 
@@ -508,11 +506,11 @@ class PlateReverb {
     //--------------------------------------------------------------
     //--------------------------------------------------------------
 
-    double sampleRate = 1.0;
+    F sampleRate = 1.0;
 
-    double mix = 0.0;
-    double predelay = 0.0;
-    double decayRate = 0.0;
+    F mix = 0.0;
+    F predelay = 0.0;
+    F decayRate = 0.0;
 
     std::unique_ptr<DelayLine> predelayLine = nullptr;
     OnePoleFilter lowpass;
@@ -522,13 +520,13 @@ class PlateReverb {
     Tank leftTank;
     Tank rightTank;
 
-    static const int kNumTaps = 7;
-    std::array<double, kNumTaps> baseLeftTaps = {};
-    std::array<double, kNumTaps> baseRightTaps = {};
-    std::array<double, kNumTaps> leftTaps = {};
-    std::array<double, kNumTaps> rightTaps = {};
+    static const I kNumTaps = 7;
+    std::array<F, kNumTaps> baseLeftTaps = {};
+    std::array<F, kNumTaps> baseRightTaps = {};
+    std::array<F, kNumTaps> leftTaps = {};
+    std::array<F, kNumTaps> rightTaps = {};
 
-    static inline double clamp(double val, double low, double high) {
+    static inline F clamp(F val, F low, F high) {
         return std::min(std::max(val, low), high);
     }
 };
